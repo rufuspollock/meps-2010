@@ -1,0 +1,20 @@
+{
+  "name": "members-european-parliament",
+  "title": "Members of the European Parliament",
+  "license_id": "odc-pddl",
+  "tags": ["meps", "parliament", "europe"],
+  "notes": "Listing of all MEPs (current and past) with associated information (party, biographical details etc).\n\nSource: European Parliament website. Last scraped: 2010-12-07.",
+  "url": "http://www.europarl.europa.eu/members/archive/alphaOrder.do?language=EN",
+  "resources": [
+    {
+      "url": "http://bitbucket.org/rgrp/meps/raw/tip/data/meps.json",
+      "format": "application/json",
+      "description": "List of active MEPs as JSON"
+    },
+    {
+      "url": "http://bitbucket.org/rgrp/meps/",
+      "format": "datapkg/src/hg",
+      "description": "datapkg (mercurial repo)"
+    }
+  ]
+}

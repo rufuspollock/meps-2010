@@ -6,17 +6,18 @@ import os
 import re
 
 import BeautifulSoup as bs
-import simplejson as sj
+import json
 
-from econ.data import Retriever
+from swiss.cache import Cache
 
 cache = os.path.join(os.path.dirname(__file__), 'cache')
+DATAPATH = os.path.join(os.path.dirname(__file__), 'data')
 europarl_url = 'http://www.europarl.europa.eu'
 juri_url = 'http://www.europarl.europa.eu/activities/committees/membersCom.do?body=JURI'
 itre_url = 'http://www.europarl.europa.eu/activities/committees/membersCom.do?body=ITRE'
 member_base_url = 'http://www.europarl.europa.eu/members/expert/committees/view.do'
 
-retriever = Retriever(cache)
+retriever = Cache(cache)
 infopath = os.path.join(cache, 'info.js')
 
 # from http://effbot.org/zone/re-sub.htm#unescape-html
@@ -82,23 +83,20 @@ def allmeps():
             id = hrefre.match(link['href']).group(1)
             name = cleantext(link.string)
             meps[id] = name
-    print meps.keys()
     print 'Found ids for %s MEPs' % len(meps)
     getinfo = GetInfo()
-    for id, values in meps.items():
+    for count, (id, values) in enumerate(meps.items()):
         url = mep_url(id)
-        print url
+        print id, values, url
         try:
             newdata = getinfo.info(url)
         except Exception, inst:
-            print inst
-            print id
-            print url
+            print '!!!!! Failed to parse MEP info: %s %s %s' % (inst, id, url)
         # check names are the same?
         # assert newdata['name'] == values['name']
         meps[id] = newdata
-    jspath = retriever.filepath('allmeps.js')
-    sj.dump(meps, open(jspath, 'w'), indent=4)
+    jspath = os.path.join(DATAPATH, 'meps.json')
+    json.dump(meps, open(jspath, 'w'), indent=4)
 
 
 class GetInfo(object):
@@ -120,7 +118,7 @@ class GetInfo(object):
         mep['name'] = name
         # only one child
         email = soup.find('td', 'mepmail').find('a')
-        if email:
+        if email and email.string:
             mep['email'] = cleantext(email.string)
         def get_phone(prefix):
             phonere = '^.*(\+%s.*)' % prefix
@@ -234,10 +232,10 @@ def extract():
     for m in itre:
         print m['url']
         process(m, 'itre')
-    sj.dump(meps, open(infopath, 'w'), indent=4)
+    json.dump(meps, open(infopath, 'w'), indent=4)
 
 def use():
-    meps = sj.load(open(infopath))
+    meps = json.load(open(infopath))
     # TODO: sort by name
     juri = []
     itre = []
